@@ -6458,6 +6458,7 @@ select.h40 {
   background-color: transparent !important;
 }
 
+*
 [data-menu-background=image-menu-background-5] .section-menu-left::before {
   opacity: 0.8;
   background-color: #111;

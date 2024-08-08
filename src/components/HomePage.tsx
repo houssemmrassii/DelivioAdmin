@@ -1,14 +1,18 @@
+// src/components/HomePage.tsx
 import React from 'react';
+import { Box, Typography } from '@mui/material';
 
 const HomePage: React.FC = () => {
   return (
-    <main>
-      <p>HomePage</p>
-    </main>
+    <Box>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Welcome to Delivio
+      </Typography>
+      <Typography variant="body1">
+        This is the homepage. Navigate using the sidebar.
+      </Typography>
+    </Box>
   );
 };
 
 export default HomePage;
-
-// Add an empty export statement to ensure the file is treated as a module
-export {};
