@@ -1,20 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Button, IconButton } from '@mui/material';
-import { Visibility, Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete } from '@mui/icons-material';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './SStyle.css';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface SubCategory {
-  id: string;
-  name: string;
-}
+import './ProductList.scss';
 
 interface Product {
   id: string;
@@ -26,8 +16,6 @@ interface Product {
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,41 +23,25 @@ const ProductList: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCategoriesAndProducts = async () => {
+    const fetchProducts = async () => {
       try {
-        const productCollection = collection(db, 'products');
+        const productCollection = collection(db, 'product');
         const productSnapshot = await getDocs(productCollection);
         const productList: Product[] = productSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         })) as Product[];
 
-        const categoryCollection = collection(db, 'categories');
-        const categorySnapshot = await getDocs(categoryCollection);
-        const categoryList: Category[] = categorySnapshot.docs.map(doc => ({
-          id: doc.id,
-          name: doc.data().name,
-        }));
-
-        const subCategoryCollection = collection(db, 'subcategories');
-        const subCategorySnapshot = await getDocs(subCategoryCollection);
-        const subCategoryList: SubCategory[] = subCategorySnapshot.docs.map(doc => ({
-          id: doc.id,
-          name: doc.data().name,
-        }));
-
         setProducts(productList);
-        setCategories(categoryList);
-        setSubCategories(subCategoryList);
-        setFilteredProducts(productList);
+        setFilteredProducts(productList); // Initialize filtered products
       } catch (error) {
-        setError('Failed to fetch data');
+        setError('Échec de la récupération des données');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategoriesAndProducts();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -80,23 +52,13 @@ const ProductList: React.FC = () => {
     );
   }, [searchTerm, products]);
 
-  const getCategoryName = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unknown';
-  };
-
-  const getSubCategoryName = (subCategoryId: string) => {
-    const subCategory = subCategories.find(subCat => subCat.id === subCategoryId);
-    return subCategory ? subCategory.name : 'Unknown';
-  };
-
   const handleDelete = async (productId: string) => {
     try {
-      await deleteDoc(doc(db, 'products', productId));
+      await deleteDoc(doc(db, 'product', productId));
       setProducts(products.filter(product => product.id !== productId));
       setFilteredProducts(filteredProducts.filter(product => product.id !== productId));
     } catch (error) {
-      setError('Failed to delete product');
+      setError('Échec de la suppression du produit');
     }
   };
 
@@ -105,7 +67,7 @@ const ProductList: React.FC = () => {
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>Chargement...</Typography>;
   }
 
   if (error) {
@@ -113,16 +75,16 @@ const ProductList: React.FC = () => {
   }
 
   return (
-    <Container>
+    <Container className="product-list-container">
       <Typography variant="h4" gutterBottom>
-        Product List
+        Liste des Produits
       </Typography>
       <div className="search-export-container">
         <form className="form-search" onSubmit={(e) => e.preventDefault()}>
           <fieldset className="name">
             <input
               type="text"
-              placeholder="Search here..."
+              placeholder="Rechercher ici..."
               className="search-input"
               name="name"
               value={searchTerm}
@@ -135,42 +97,37 @@ const ProductList: React.FC = () => {
             </button>
           </div>
         </form>
-        <Button variant="contained" className="export-button">
-          <i className="icon-file-text"></i>Export all products
-        </Button>
+        
         <div className="add-buttons">
           <Button
             variant="contained"
-            color="primary"
             className="add-button"
             onClick={() => navigate('/categories/new')}
           >
-            + Add Category
+            + Ajouter Catégorie
           </Button>
           <Button
             variant="contained"
-            color="primary"
             className="add-button"
             onClick={() => navigate('/subcategories/new')}
           >
-            + Add SubCategory
+            + Ajouter Sous-Catégorie
           </Button>
           <Button
             variant="contained"
-            color="primary"
             className="add-button"
             onClick={() => navigate('/products/new')}
           >
-            + Add Product
+            + Ajouter Produit
           </Button>
         </div>
       </div>
       <div className="table-container">
         <ul className="table-title">
-          <li>Product Image</li>
-          <li>Name</li>
-          <li>Category</li>
-          <li>SubCategory</li>
+          <li>Image du Produit</li>
+          <li>Nom</li>
+          <li>Catégorie</li>
+          <li>Sous-Catégorie</li>
           <li>Action</li>
         </ul>
         {filteredProducts.map((product, index) => (
@@ -179,12 +136,9 @@ const ProductList: React.FC = () => {
               <img src={product.productImage} alt={product.productName} className="product-image" />
             </li>
             <li>{product.productName}</li>
-            <li>{getCategoryName(product.productCategory)}</li>
-            <li>{getSubCategoryName(product.productSpecCategory)}</li>
+            <li>{product.productCategory || 'Inconnu'}</li>
+            <li>{product.productSpecCategory || 'Inconnu'}</li>
             <li>
-              <IconButton className="action-button" onClick={() => navigate(`/products/${product.id}`)}>
-                <Visibility />
-              </IconButton>
               <IconButton className="action-button" onClick={() => handleUpdate(product.id)}>
                 <Edit />
               </IconButton>

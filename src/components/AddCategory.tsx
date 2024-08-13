@@ -1,81 +1,153 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, TextField } from '@mui/material';
-import { collection, addDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebaseConfig';
-import './SStyle.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Container, Typography, TextField, Button } from '@mui/material';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './AddCategory.scss'; // Assuming you have a corresponding SCSS file for styling
 
 const AddCategory: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [categoryImage, setCategoryImage] = useState<File | null>(null);
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    if (id) {
+      const fetchCategory = async () => {
+        try {
+          const docRef = doc(db, 'category', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setName(data.name);
+            setPhotoURL(data.categoryImage);
+          } else {
+            setError('La catégorie n\'existe pas');
+          }
+        } catch (error) {
+          setError('Échec de la récupération de la catégorie');
+        }
+      };
+
+      fetchCategory();
+    }
+  }, [id]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setCategoryImage(event.target.files[0]);
+    const file = event.target.files?.[0];
+    if (file) {
+      setCategoryImage(file);
+      setPhotoURL(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError(null);
+
+    if (!name || (!photoURL && !categoryImage)) {
+      setError('Tous les champs sont obligatoires');
+      return;
+    }
+
     try {
-      const imageUrl = await uploadImage(categoryImage);
-      await addDoc(collection(db, 'category'), {
-        name,
-        categoryImage: imageUrl,
-        subCategories: [],
-        tags: []
-      });
-      navigate('/categories');
-    } catch (error) {
-      setError('Failed to add category');
+      const storage = getStorage();
+      let imageUrl = photoURL;
+
+      if (categoryImage) {
+        const storageRef = ref(storage, `category_images/${categoryImage.name}`);
+        await uploadBytes(storageRef, categoryImage);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+
+      if (id) {
+        await updateDoc(doc(db, 'category', id), {
+          name,
+          categoryImage: imageUrl,
+        });
+        toast.success('Catégorie mise à jour avec succès!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      } else {
+        await addDoc(collection(db, 'category'), {
+          name,
+          categoryImage: imageUrl,
+          subCategories: [],
+          tags: []
+        });
+        toast.success('Catégorie ajoutée avec succès!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+
+      setTimeout(() => navigate('/categories'), 5000);
+    } catch (err) {
+      console.error('Error adding/updating category: ', err);
+      setError('Échec de l\'ajout/mise à jour de la catégorie');
     }
   };
 
-  const uploadImage = async (image: File | null): Promise<string> => {
-    if (!image) throw new Error('No image file');
-    const storageRef = ref(storage, `category_images/${image.name}`);
-    await uploadBytes(storageRef, image);
-    return await getDownloadURL(storageRef);
-  };
-
   return (
-    <Container>
+    <Container className="add-category-form">
+      <ToastContainer />
       <Typography variant="h4" gutterBottom>
-        Add Category
+        {id ? 'Modifier la Catégorie' : 'Ajouter une Catégorie'}
       </Typography>
       <form onSubmit={handleSubmit}>
         <TextField
-          label="Category Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
+          label="Nom de la Catégorie"
           fullWidth
           margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
-        <input
-          accept="image/*"
-          id="category-image"
-          type="file"
-          onChange={handleImageChange}
-          style={{ display: 'none' }}
-        />
-        <label htmlFor="category-image">
-          <Button variant="contained" component="span">
-            Upload Image
+        <div className="upload-photo">
+          <input
+            accept="image/*"
+            type="file"
+            id="photo-upload"
+            style={{ display: 'none' }}
+            onChange={handleImageChange}
+          />
+          <label htmlFor="photo-upload">
+            <div className="drop-area">
+              {photoURL ? (
+                <img src={photoURL} alt="Aperçu de l'image" className="photo-preview" />
+              ) : (
+                <div className="drop-text">
+                  <span>Déposez votre image ici ou sélectionnez </span>
+                  <span className="click-browse">cliquer pour parcourir</span>
+                </div>
+              )}
+            </div>
+          </label>
+        </div>
+        {error && <p className="error">{error}</p>}
+        <div className="form-actions">
+          <Button type="submit" variant="contained" color="primary">
+            {id ? 'Mettre à jour la Catégorie' : 'Ajouter la Catégorie'}
           </Button>
-        </label>
-        {categoryImage && (
-          <div className="image-preview">
-            <img src={URL.createObjectURL(categoryImage)} alt="Preview" />
-          </div>
-        )}
-        <Button type="submit" variant="contained" color="primary">
-          Add Category
-        </Button>
-        {error && <Typography color="error">{error}</Typography>}
+          <Button variant="contained" color="secondary" onClick={() => navigate('/categories')}>
+            Annuler
+          </Button>
+        </div>
       </form>
     </Container>
   );

@@ -29,24 +29,24 @@ const Sidebar: React.FC = () => {
                     <li>
                         <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'active' : '')}>
                             <FaTachometerAlt className="icon" />
-                            <span>Dashboard</span>
+                            <span>Tableau de Bord</span>
                         </NavLink>
                     </li>
                     <li>
                         <div className="menu-item" onClick={() => toggleMenu('orders')}>
                             <FaShoppingCart className="icon" />
-                            <span>Orders</span>
+                            <span>Commandes</span>
                         </div>
                         {openMenu === 'orders' && (
                             <ul className="submenu show">
                                 <li>
                                     <NavLink to="/orders" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Orders List
+                                        Liste des Commandes
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/orders/:orderId" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Order Details
+                                        Détails de la Commande
                                     </NavLink>
                                 </li>
                             </ul>
@@ -55,23 +55,23 @@ const Sidebar: React.FC = () => {
                     <li>
                         <div className="menu-item" onClick={() => toggleMenu('delivery-men')}>
                             <FaUserFriends className="icon" />
-                            <span>Delivery Men</span>
+                            <span>Livreurs</span>
                         </div>
                         {openMenu === 'delivery-men' && (
                             <ul className="submenu show">
                                 <li>
                                     <NavLink to="/delivery-men" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Delivery Men List
+                                        Liste des Livreurs
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/delivery-men/new" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        New Delivery Man
+                                        Nouveau Livreur
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/delivery-men/edit/:deliveryManId" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Update Delivery Man
+                                        Modifier Livreur
                                     </NavLink>
                                 </li>
                             </ul>
@@ -80,33 +80,33 @@ const Sidebar: React.FC = () => {
                     <li>
                         <div className="menu-item" onClick={() => toggleMenu('food')}>
                             <FaUtensils className="icon" />
-                            <span>Food Management</span>
+                            <span>Gestion des Aliments</span>
                         </div>
                         {openMenu === 'food' && (
                             <ul className="submenu show">
                                 <li>
                                     <NavLink to="/categories" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Category List
+                                        Liste des Catégories
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/categories/new" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Add Category
+                                        Ajouter une Catégorie
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/subcategories/new" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Add SubCategory
+                                        Ajouter une Sous-Catégorie
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/products" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Product List
+                                        Liste des Produits
                                     </NavLink>
                                 </li>
                                 <li>
                                     <NavLink to="/products/new" className={({ isActive }) => (isActive ? 'active' : '')}>
-                                        Add Product
+                                        Ajouter un Produit
                                     </NavLink>
                                 </li>
                             </ul>
@@ -115,16 +115,16 @@ const Sidebar: React.FC = () => {
                     <li>
                         <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')}>
                             <FaCogs className="icon" />
-                            <span>Settings</span>
+                            <span>Paramètres</span>
                         </NavLink>
                     </li>
                 </ul>
             </div>
             <div className="sidebar-footer">
                 <div className="help">
-                    <p>Hi, how can we help?</p>
-                    <p>Contact us if you need any assistance, we will respond as soon as possible.</p>
-                    <button>Contact</button>
+                    <p>Bonjour, comment pouvons-nous vous aider?</p>
+                    <p>Contactez-nous si vous avez besoin d'aide, nous répondrons dès que possible.</p>
+                    <button>Contactez</button>
                 </div>
             </div>
         </div>

@@ -1,4 +1,3 @@
-// Header.tsx
 import React, { useState } from 'react';
 import { FaSearch, FaBell, FaEnvelope, FaUserCircle, FaCog, FaSignOutAlt, FaMoon, FaExpand, FaGlobe } from 'react-icons/fa';
 import './Header.scss';
@@ -14,7 +13,7 @@ const Header: React.FC = () => {
         <header className="header">
             <div className="header-left">
                 <div className="search-bar">
-                    <input type="text" placeholder="Search here..." />
+                    <input type="text" placeholder="Recherchez ici..." />
                     <FaSearch className="search-icon" />
                 </div>
             </div>
@@ -32,10 +31,10 @@ const Header: React.FC = () => {
                 {isAdminMenuOpen && (
                     <div className="admin-menu">
                         <ul>
-                            <li><FaUserCircle /> Account</li>
-                            <li><FaEnvelope /> Inbox <span className="badge">27</span></li>
-                            <li><FaCog /> Setting</li>
-                            <li><FaSignOutAlt /> Log out</li>
+                            <li><FaUserCircle /> Compte</li>
+                            <li><FaEnvelope /> Boîte de Réception <span className="badge">27</span></li>
+                            <li><FaCog /> Paramètres</li>
+                            <li><FaSignOutAlt /> Déconnexion</li>
                         </ul>
                     </div>
                 )}

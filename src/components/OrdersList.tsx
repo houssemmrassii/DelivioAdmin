@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Button, IconButton } from '@mui/material';
 import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Adjust the import according to your firebase configuration
+import { db } from '../firebaseConfig';
 import './SStyle.css'; // Import the CSS file
 
 interface OrderItem {
@@ -42,7 +42,7 @@ const OrdersList: React.FC = () => {
             id: doc.id,
             items: data.items,
             totalPrice: data.finalTotal.toFixed(2),
-            status: data.status || 'Pending',
+            status: data.status || 'En attente',
             createdAt: data.createdAt,
             shippingAddress: data.deliveryAddress.address,
             paymentMethod: data.paymentMethod,
@@ -51,7 +51,7 @@ const OrdersList: React.FC = () => {
         setOrders(ordersList);
         setFilteredOrders(ordersList);
       } catch (error) {
-        setError('Failed to fetch orders');
+        setError('Échec du chargement des commandes');
       } finally {
         setLoading(false);
       }
@@ -71,11 +71,11 @@ const OrdersList: React.FC = () => {
   const getStatusColor = (status?: string) => {
     if (!status) return 'black';
     switch (status.toLowerCase()) {
-      case 'in progress':
+      case 'en cours':
         return 'green';
-      case 'pending':
+      case 'en attente':
         return 'gray';
-      case 'canceled':
+      case 'annulé':
         return 'red';
       default:
         return 'black';
@@ -88,12 +88,12 @@ const OrdersList: React.FC = () => {
       setOrders(orders.filter(order => order.id !== orderId));
       setFilteredOrders(filteredOrders.filter(order => order.id !== orderId));
     } catch (error) {
-      setError('Failed to delete order');
+      setError('Échec de la suppression de la commande');
     }
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>Chargement...</Typography>;
   }
 
   if (error) {
@@ -103,14 +103,14 @@ const OrdersList: React.FC = () => {
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Orders List
+        Liste des Commandes
       </Typography>
       <div className="search-export-container">
         <form className="form-search" onSubmit={(e) => e.preventDefault()}>
           <fieldset className="name">
             <input
               type="text"
-              placeholder="Search here..."
+              placeholder="Rechercher ici..."
               className="search-input"
               name="name"
               value={searchStatus}
@@ -124,28 +124,28 @@ const OrdersList: React.FC = () => {
           </div>
         </form>
         <Button variant="contained" className="export-button">
-          <i className="icon-file-text"></i>Export all orders
+          <i className="icon-file-text"></i>Exporter toutes les commandes
         </Button>
       </div>
       <div className="table-container">
         <ul className="table-title">
-          <li>Order ID</li>
-          <li>Price</li>
-          <li>Quantity</li>
-          <li>Payment</li>
-          <li>Status</li>
-          <li>Tracking</li>
+          <li>ID Commande</li>
+          <li>Prix</li>
+          <li>Quantité</li>
+          <li>Paiement</li>
+          <li>Statut</li>
+          <li>Suivi</li>
           <li>Action</li>
         </ul>
         {filteredOrders.map((order, index) => (
           <ul key={order.id} className={`product-item ${index % 2 === 0 ? 'even-row' : 'odd-row'}`}>
             <li>{order.id}</li>
-            <li>{order.totalPrice}</li>
+            <li>{order.totalPrice} €</li>
             <li>{order.items.reduce((sum, item) => sum + (item.quantity || 0), 0)}</li>
             <li>{order.paymentMethod}</li>
-            <li style={{ color: getStatusColor(order.status) }}>{order.status || 'Pending'}</li>
+            <li style={{ color: getStatusColor(order.status) }}>{order.status || 'En attente'}</li>
             <li>
-              <Button variant="outlined" className="tracking-button">Tracking</Button>
+              <Button variant="outlined" className="tracking-button">Suivi</Button>
             </li>
             <li>
               <IconButton className="action-button" onClick={() => navigate(`/orders/${order.id}`)}>

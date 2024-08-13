@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Button, TextField, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Container, TextField, Button, Select, FormControl, InputLabel, MenuItem, Typography } from '@mui/material';
 import { collection, addDoc, updateDoc, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db, storage } from '../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import './SStyle.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './ProductForm.scss';
 
 interface Category {
   id: string;
@@ -14,7 +16,7 @@ interface Category {
 interface SubCategory {
   id: string;
   name: string;
-  categoryId: string;  // Add this line
+  categoryId: string;
 }
 
 const ProductForm: React.FC = () => {
@@ -24,13 +26,11 @@ const ProductForm: React.FC = () => {
   const [productPrice, setProductPrice] = useState<number | null>(null);
   const [category, setCategory] = useState<string>('');
   const [subCategory, setSubCategory] = useState<string>('');
-  const [productImage, setProductImage] = useState<File | null>(null);
-  const [productImageUrl, setProductImageUrl] = useState<string>('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,36 +59,63 @@ const ProductForm: React.FC = () => {
           setProductPrice(productData.productPrice);
           setCategory(productData.productCategory);
           setSubCategory(productData.productSpecCategory);
-          setProductImageUrl(productData.productImage);
+          setPhotoURL(productData.productImage);
         }
       }
-      setLoading(false);
     };
 
     fetchCategoriesAndProduct();
   }, [productId]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setProductImage(event.target.files[0]);
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhoto(file);
+      setPhotoURL(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-    if (!productName || !productDescription || !productPrice || !category || !subCategory || (!productImage && !productImageUrl)) {
-      setError('Please fill out all fields');
+    if (!productName.trim()) {
+      setError('Le nom du produit est obligatoire.');
+      return;
+    }
+
+    if (!productDescription.trim()) {
+      setError('La description du produit est obligatoire.');
+      return;
+    }
+
+    if (!productPrice || productPrice <= 0) {
+      setError('Le prix du produit doit être supérieur à 0.');
+      return;
+    }
+
+    if (!category) {
+      setError('La catégorie est obligatoire.');
+      return;
+    }
+
+    if (!subCategory) {
+      setError('La sous-catégorie est obligatoire.');
+      return;
+    }
+
+    if (!photo && !photoURL) {
+      setError('L\'image du produit est obligatoire.');
       return;
     }
 
     try {
-      let imageUrl = productImageUrl;
+      let imageUrl = photoURL;
 
-      if (productImage) {
-        const imageRef = ref(storage, `product_images/${productImage.name}`);
-        await uploadBytes(imageRef, productImage);
-        imageUrl = await getDownloadURL(imageRef);
+      if (photo) {
+        const storageRef = ref(storage, `productImages/${photo.name}`);
+        await uploadBytes(storageRef, photo);
+        imageUrl = await getDownloadURL(storageRef);
       }
 
       const productData = {
@@ -98,8 +125,6 @@ const ProductForm: React.FC = () => {
         productCategory: category,
         productSpecCategory: subCategory,
         productImage: imageUrl,
-        available: true,
-        added_at: Date.now(),
       };
 
       if (productId) {
@@ -108,68 +133,75 @@ const ProductForm: React.FC = () => {
         await addDoc(collection(db, 'products'), productData);
       }
 
-      setOpen(true);
-      setProductName('');
-      setProductDescription('');
-      setProductPrice(null);
-      setCategory('');
-      setSubCategory('');
-      setProductImage(null);
-      setProductImageUrl('');
-    } catch (error) {
-      setError('Failed to save product');
+      toast.success('Produit enregistré avec succès!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+
+      setTimeout(() => navigate('/products'), 5000);
+    } catch (err) {
+      console.error('Error adding document: ', err);
+      setError('Échec de l\'enregistrement du produit');
     }
   };
 
   return (
-    <Container>
+    <Container className="product-form-container">
+      <ToastContainer />
       <Typography variant="h4" gutterBottom>
-        {productId ? 'Update Product' : 'Add Product'}
+        {productId ? 'Modifier le Produit' : 'Ajouter le Produit'}
       </Typography>
       <form onSubmit={handleSubmit}>
         <TextField
-          label="Product Name"
+          label="Nom du Produit"
+          fullWidth
+          margin="normal"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
+          error={!!error && !productName.trim()}
+          helperText={!!error && !productName.trim() && 'Le nom du produit est obligatoire.'}
         />
         <TextField
-          label="Product Description"
+          label="Description du Produit"
+          fullWidth
+          margin="normal"
           value={productDescription}
           onChange={(e) => setProductDescription(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
+          error={!!error && !productDescription.trim()}
+          helperText={!!error && !productDescription.trim() && 'La description du produit est obligatoire.'}
         />
         <TextField
-          label="Product Price"
+          label="Prix du Produit"
           type="number"
-          value={productPrice ?? ''}
-          onChange={(e) => setProductPrice(parseFloat(e.target.value))}
-          required
           fullWidth
           margin="normal"
+          value={productPrice ?? ''}
+          onChange={(e) => setProductPrice(parseFloat(e.target.value))}
+          error={!!error && (!productPrice || productPrice <= 0)}
+          helperText={!!error && (!productPrice || productPrice <= 0) && 'Le prix du produit doit être supérieur à 0.'}
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Category</InputLabel>
+        <FormControl fullWidth margin="normal" error={!!error && !category}>
+          <InputLabel>Catégorie</InputLabel>
           <Select
             value={category}
             onChange={(e) => setCategory(e.target.value as string)}
-            required
           >
             {categories.map(category => (
               <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
             ))}
           </Select>
+          {!!error && !category && <Typography color="error">La catégorie est obligatoire.</Typography>}
         </FormControl>
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Sub-Category</InputLabel>
+        <FormControl fullWidth margin="normal" error={!!error && !subCategory}>
+          <InputLabel>Sous-Catégorie</InputLabel>
           <Select
             value={subCategory}
             onChange={(e) => setSubCategory(e.target.value as string)}
-            required
           >
             {subCategories
               .filter(subCat => subCat.categoryId === category)
@@ -178,47 +210,40 @@ const ProductForm: React.FC = () => {
               ))
             }
           </Select>
+          {!!error && !subCategory && <Typography color="error">La sous-catégorie est obligatoire.</Typography>}
         </FormControl>
-        <div className="upload-image-container">
+        <div className="upload-photo">
           <input
             accept="image/*"
-            id="product-image"
             type="file"
-            onChange={handleImageChange}
+            id="photo-upload"
             style={{ display: 'none' }}
+            onChange={handlePhotoChange}
           />
-          <label htmlFor="product-image" className="upload-label">
-            <div className="upload-box">
-              <span>Drop your images here or select <span className="click-to-browse">click to browse</span></span>
+          <label htmlFor="photo-upload">
+            <div className="drop-area">
+              {photoURL ? (
+                <img src={photoURL} alt="Aperçu de l'image" className="photo-preview" />
+              ) : (
+                <div className="drop-text">
+                  <span>Déposez vos images ici ou sélectionnez </span>
+                  <span className="click-browse">cliquez pour parcourir</span>
+                </div>
+              )}
             </div>
           </label>
-          {productImage && (
-            <div className="image-preview">
-              <img src={URL.createObjectURL(productImage)} alt="Preview" />
-            </div>
-          )}
-          {!productImage && productImageUrl && (
-            <div className="image-preview">
-              <img src={productImageUrl} alt="Preview" />
-            </div>
-          )}
+          {!!error && !photoURL && !photo && <Typography color="error">L'image du produit est obligatoire.</Typography>}
         </div>
-        <Button type="submit" variant="contained" color="primary">
-          {productId ? 'Update Product' : 'Add Product'}
-        </Button>
-        {error && <Typography color="error">{error}</Typography>}
-      </form>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Success</DialogTitle>
-        <DialogContent>
-          <Typography>{productId ? 'Product updated successfully!' : 'Product added successfully!'}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)} color="primary">
-            OK
+        {error && <p className="error">{error}</p>}
+        <div className="form-actions">
+          <Button type="submit" variant="contained" color="primary">
+            {productId ? 'Modifier le Produit' : 'Ajouter le Produit'}
           </Button>
-        </DialogActions>
-      </Dialog>
+          <Button variant="contained" color="secondary" onClick={() => navigate('/products')}>
+            Annuler
+          </Button>
+        </div>
+      </form>
     </Container>
   );
 };

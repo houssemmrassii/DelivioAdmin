@@ -26,22 +26,51 @@ const DeliveryManForm: React.FC = () => {
     }
   };
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6;
+  };
+
+  const validatePhoneNumber = (phoneNumber: string) => {
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;  // Validates international phone numbers
+    return phoneRegex.test(phoneNumber);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!email || !name || !password || !phoneNumber || !photo) {
-      setError('All fields are required');
+      setError('Tous les champs sont obligatoires');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Adresse email invalide');
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      setError('Numéro de téléphone invalide');
       return;
     }
 
     try {
       const storage = getStorage();
-      const storageRef = ref(storage, `deliveryMenPhotos/${photo.name}`);
+      const storageRef = ref(storage, `photosLivreurs/${photo.name}`);
       await uploadBytes(storageRef, photo);
       const photoURL = await getDownloadURL(storageRef);
 
-      await addDoc(collection(db, 'deliveryMen'), {
+      await addDoc(collection(db, 'livreurs'), {
         email,
         name,
         password,
@@ -49,10 +78,10 @@ const DeliveryManForm: React.FC = () => {
         photo: photoURL,
       });
 
-      // Send email to delivery man
+      // Envoi d'un email au livreur
       await sendEmail(email, name);
 
-      toast.success('Delivery man added successfully!', {
+      toast.success('Livreur ajouté avec succès!', {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -62,16 +91,16 @@ const DeliveryManForm: React.FC = () => {
         progress: undefined,
       });
 
-      setTimeout(() => navigate('/delivery-men'), 5000);
+      setTimeout(() => navigate('/livreurs'), 5000);
     } catch (err) {
-      console.error('Error adding document: ', err);
-      setError('Failed to add delivery man');
+      console.error('Erreur lors de l\'ajout du document: ', err);
+      setError('Échec de l\'ajout du livreur');
     }
   };
 
   const sendEmail = async (email: string, name: string) => {
-    // Email sending logic (using an email service like SendGrid, NodeMailer, etc.)
-    console.log(`Sending email to ${email} for delivery man ${name}`);
+    // Logique d'envoi d'email (en utilisant un service d'email comme SendGrid, NodeMailer, etc.)
+    console.log(`Envoi d'un email à ${email} pour le livreur ${name}`);
   };
 
   return (
@@ -84,28 +113,34 @@ const DeliveryManForm: React.FC = () => {
           margin="normal"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          error={!!error && !validateEmail(email)}
+          helperText={!!error && !validateEmail(email) ? 'Adresse email invalide' : ''}
         />
         <TextField
-          label="Name"
+          label="Nom"
           fullWidth
           margin="normal"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <TextField
-          label="Password"
+          label="Mot de passe"
           type="password"
           fullWidth
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          error={!!error && !validatePassword(password)}
+          helperText={!!error && !validatePassword(password) ? 'Le mot de passe doit contenir au moins 6 caractères' : ''}
         />
         <TextField
-          label="Phone Number"
+          label="Numéro de téléphone"
           fullWidth
           margin="normal"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
+          error={!!error && !validatePhoneNumber(phoneNumber)}
+          helperText={!!error && !validatePhoneNumber(phoneNumber) ? 'Numéro de téléphone invalide' : ''}
         />
         <div className="upload-photo">
           <input
@@ -118,11 +153,11 @@ const DeliveryManForm: React.FC = () => {
           <label htmlFor="photo-upload">
             <div className="drop-area">
               {photoURL ? (
-                <img src={photoURL} alt="Photo Preview" className="photo-preview" />
+                <img src={photoURL} alt="Aperçu de la photo" className="photo-preview" />
               ) : (
                 <div className="drop-text">
-                  <span>Drop your images here or select </span>
-                  <span className="click-browse">click to browse</span>
+                  <span>Déposez vos images ici ou sélectionnez </span>
+                  <span className="click-browse">cliquez pour parcourir</span>
                 </div>
               )}
             </div>
@@ -131,10 +166,10 @@ const DeliveryManForm: React.FC = () => {
         {error && <p className="error">{error}</p>}
         <div className="form-actions">
           <Button type="submit" variant="contained" color="primary">
-            Add Delivery Man
+            Ajouter le Livreur
           </Button>
-          <Button variant="contained" color="secondary" onClick={() => navigate('/delivery-men')}>
-            Cancel
+          <Button variant="contained" color="secondary" onClick={() => navigate('/livreurs')}>
+            Annuler
           </Button>
         </div>
       </form>

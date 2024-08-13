@@ -34,11 +34,11 @@ const AddProduct: React.FC = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const categorySnapshot = await getDocs(collection(db, 'categories'));
+      const categorySnapshot = await getDocs(collection(db, 'category'));
       const categoryList: Category[] = categorySnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
       setCategories(categoryList);
 
-      const subCategorySnapshot = await getDocs(collection(db, 'subcategories'));
+      const subCategorySnapshot = await getDocs(collection(db, 'subcategory'));
       const subCategoryList: SubCategory[] = subCategorySnapshot.docs.map(doc => ({
         id: doc.id,
         name: doc.data().name,

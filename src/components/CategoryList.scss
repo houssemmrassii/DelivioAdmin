@@ -1,43 +1,110 @@
 .table-container {
-    width: 100%;
     margin-top: 20px;
-    overflow-x: auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .table-title {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+      border-bottom: none;
   
-      th, td {
-        padding: 10px;
+      li {
+        flex: 1;
         text-align: left;
-        border-bottom: 1px solid #ddd;
+        &:first-child {
+          text-align: center;
+          flex: 1;
+        }
+      }
+    }
+  
+    .category-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      transition: background-color 0.3s ease;
+      &:last-child {
+        border-bottom: none;
       }
   
-      th {
-        background-color: #f9f9f9;
+      &:hover {
+        background-color: #f1f1f1;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
       }
   
       .category-image {
         width: 50px;
         height: 50px;
-        object-fit: cover;
-        margin-right: 10px;
+        border-radius: 8px;
+        margin-right: 20px;
       }
   
-      .even-row {
-        background-color: #f9f9f9;
-      }
+      li {
+        flex: 1;
+        text-align: left;
+        border-bottom: none;
+        &:first-child {
+          text-align: center;
+          flex: 1;
+        }
   
-      .odd-row {
-        background-color: #fff;
+        &:nth-child(2) {
+          font-weight: bold;
+        }
       }
   
       .action-button {
-        color: #1976d2;
+        color: #007bff;
+        &:hover {
+          color: #0056b3;
+        }
       }
   
       .delete-button {
-        color: #d32f2f;
+        color: #dc3545;
+        &:hover {
+          color: #c82333;
+        }
+      }
+    }
+  
+    .MuiFormControl-root {
+      margin: 0;
+      width: 100%;
+    }
+  
+    .MuiSelect-select {
+      padding: 8px 16px;
+      background-color: #fff;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      &:focus {
+        border-color: #007bff;
+      }
+    }
+  }
+  
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    .pagination-button {
+      margin: 0 5px;
+      color: #007bff;
+      &.active {
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 50%;
+      }
+      &:hover {
+        background-color: #0056b3;
+        color: #fff;
       }
     }
   }

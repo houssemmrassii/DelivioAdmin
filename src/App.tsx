@@ -17,6 +17,8 @@ import AddCategory from './components/AddCategory';
 import AddSubCategory from './components/AddSubCategory';
 import ProductList from './components/ProductList';
 import AddProduct from './components/AddProduct';
+import SubCategoryList from './components/SubCategoryList';
+import ProductForm from './components/ProductForm';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -63,7 +65,9 @@ const App: React.FC = () => {
           <Route path="categories/new" element={<AddCategory />} />
           <Route path="subcategories/new" element={<AddSubCategory />} />
           <Route path="products" element={<ProductList />} />
-          <Route path="products/new" element={<AddProduct />} />
+          <Route path="products/new" element={<ProductForm />} />
+          <Route path="subcategories" element={<SubCategoryList />} />
+
 
         </Route>
       </Routes>

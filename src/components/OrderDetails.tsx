@@ -1,22 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, getDocs, updateDoc, collection } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Box, Typography, CircularProgress, Button, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import './OrderDetails.css'; // Import the CSS file
 
+// Color Palette
+const primaryColor = '#FF9A40';
+const darkShade = '#CC7A33';
+const lightShade = '#FFB673';
+const complementaryColor = '#4077FF';
+const neutralBackground = '#F5F5F5';
+const textColor = '#333333';
+
 // Styled components
 const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  padding: theme.spacing(3),
-  backgroundColor: '#f4f6f8',
+  padding: theme.spacing(4),
+  backgroundColor: neutralBackground,
+  fontSize: '18px', // Increased font size
 }));
 
 const Section = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(2),
+  padding: theme.spacing(4),
+  marginBottom: theme.spacing(3),
   backgroundColor: '#fff',
   borderRadius: '8px',
 }));
@@ -25,7 +34,7 @@ const ItemBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   borderBottom: '1px solid #e0e0e0',
 }));
 
@@ -33,16 +42,18 @@ const SummaryBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  marginBottom: theme.spacing(1),
+  marginBottom: theme.spacing(2),
 }));
 
 const TrackOrderButton = styled(Button)(({ theme }) => ({
-  backgroundColor: '#e3f2fd',
-  color: '#1e88e5',
+  backgroundColor: lightShade,
+  color: primaryColor,
   textTransform: 'none',
   '&:hover': {
-    backgroundColor: '#bbdefb',
+    backgroundColor: primaryColor,
+    color: '#fff',
   },
+  fontSize: '16px', // Increased font size for better readability
 }));
 
 interface OrderItem {
@@ -70,6 +81,7 @@ interface DeliveryMan {
 
 const OrderDetails: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [deliveryMen, setDeliveryMen] = useState<DeliveryMan[]>([]);
   const [selectedDeliveryMan, setSelectedDeliveryMan] = useState<string>('');
@@ -77,10 +89,13 @@ const OrderDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
+  const shippingCost = 10.0;
+  const taxAmount = 5.0;
+
   useEffect(() => {
     const fetchOrderDetails = async () => {
       if (!orderId) {
-        setError('Order ID is missing');
+        setError('L\'ID de commande est manquant');
         setLoading(false);
         return;
       }
@@ -94,7 +109,7 @@ const OrderDetails: React.FC = () => {
             id: orderId,
             items: data.items,
             totalPrice: data.totalPrice,
-            status: data.status || 'Pending',
+            status: data.status || 'En attente',
             createdAt: data.createdAt,
             shippingAddress: data.shippingAddress,
             paymentMethod: data.paymentMethod,
@@ -102,11 +117,11 @@ const OrderDetails: React.FC = () => {
           });
           setSelectedDeliveryMan(data.deliveryManId || '');
         } else {
-          setError('Order not found');
+          setError('Commande introuvable');
         }
       } catch (err) {
-        console.error('Error fetching order details:', err);
-        setError('Failed to fetch order details.');
+        console.error('Erreur lors de la récupération des détails de la commande:', err);
+        setError('Échec de la récupération des détails de la commande.');
       } finally {
         setLoading(false);
       }
@@ -122,7 +137,7 @@ const OrderDetails: React.FC = () => {
         }));
         setDeliveryMen(deliveryMenList);
       } catch (error) {
-        console.error('Error fetching delivery men:', error);
+        console.error('Erreur lors de la récupération des livreurs:', error);
       }
     };
 
@@ -130,20 +145,37 @@ const OrderDetails: React.FC = () => {
     fetchDeliveryMen();
   }, [orderId]);
 
+  const calculateTotalPrice = () => {
+    if (!order) return 0;
+
+    const itemTotal = order.items.reduce((total, item) => {
+      const itemPrice = parseFloat(item.productPrice) * item.quantity;
+      return total + itemPrice;
+    }, 0);
+
+    const total = itemTotal + shippingCost + taxAmount;
+    return total.toFixed(2); // Ensure the total is a string with two decimal places
+  };
+
   const handleAssignDeliveryMan = async () => {
     if (order && selectedDeliveryMan) {
       try {
         await updateDoc(doc(db, 'command', order.id), {
           deliveryManId: selectedDeliveryMan,
-          status: 'In Progress',
+          status: 'en cours',
         });
-        setOrder({ ...order, deliveryManId: selectedDeliveryMan, status: 'In Progress' });
+        setOrder({ ...order, deliveryManId: selectedDeliveryMan, status: 'en cours' });
         setOpenDialog(true);
       } catch (error) {
-        console.error('Error assigning delivery man:', error);
-        alert('Failed to assign delivery man.');
+        console.error('Erreur lors de l\'assignation du livreur:', error);
+        alert('Échec de l\'assignation du livreur.');
       }
     }
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    navigate('/orderlist'); // Redirect to the order list after assigning the delivery man
   };
 
   if (loading) {
@@ -155,14 +187,14 @@ const OrderDetails: React.FC = () => {
   }
 
   if (!order) {
-    return <Typography color="error">No order details found</Typography>;
+    return <Typography color="error">Aucun détail de commande trouvé</Typography>;
   }
 
   return (
     <Container>
       <Box sx={{ width: '65%' }}>
         <Section>
-          <Typography variant="h6">All items</Typography>
+          <Typography variant="h5">Tous les articles</Typography>
           {order.items.map((item, index) => (
             <ItemBox key={index}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -170,50 +202,50 @@ const OrderDetails: React.FC = () => {
                   <img
                     src={item.productImage}
                     alt={item.productName}
-                    style={{ width: 50, height: 50, borderRadius: '8px' }}
+                    style={{ width: 60, height: 60, borderRadius: '8px' }}
                   />
                 )}
                 <Box>
-                  <Typography variant="body2">Product name</Typography>
+                  <Typography variant="body1">Nom du produit</Typography>
                   <Typography variant="h6">{item.productName}</Typography>
                 </Box>
               </Box>
               <Box>
-                <Typography variant="body2">Quantity</Typography>
+                <Typography variant="body1">Quantité</Typography>
                 <Typography variant="h6">{item.quantity}</Typography>
               </Box>
               <Box>
-                <Typography variant="body2">Price (€)</Typography>
+                <Typography variant="body1">Prix (€)</Typography>
                 <Typography variant="h6">{item.productPrice}€</Typography>
               </Box>
             </ItemBox>
           ))}
         </Section>
         <Section>
-          <Typography variant="h6">Cart Totals</Typography>
+          <Typography variant="h5">Total du Panier</Typography>
           <SummaryBox>
-            <Typography>Subtotal:</Typography>
-            <Typography>{order.totalPrice}€</Typography>
+            <Typography>Sous-total:</Typography>
+            <Typography>{order.items.reduce((total, item) => total + parseFloat(item.productPrice) * item.quantity, 0).toFixed(2)}€</Typography>
           </SummaryBox>
           <SummaryBox>
-            <Typography>Shipping:</Typography>
-            <Typography>10.00€</Typography>
+            <Typography>Expédition:</Typography>
+            <Typography>{shippingCost.toFixed(2)}€</Typography>
           </SummaryBox>
           <SummaryBox>
-            <Typography>Tax (GST):</Typography>
-            <Typography>5.00€</Typography>
+            <Typography>Taxes (TVA):</Typography>
+            <Typography>{taxAmount.toFixed(2)}€</Typography>
           </SummaryBox>
           <SummaryBox>
-            <Typography>Total price:</Typography>
-            <Typography sx={{ color: 'red' }}>{parseFloat(order.totalPrice) + 15.00}€</Typography>
+            <Typography>Prix total:</Typography>
+            <Typography sx={{ color: 'red' }}>{calculateTotalPrice()}€</Typography>
           </SummaryBox>
         </Section>
       </Box>
       <Box sx={{ width: '30%' }}>
         <Section>
-          <Typography variant="h6">Summary</Typography>
+          <Typography variant="h5">Résumé</Typography>
           <SummaryBox>
-            <Typography>Order ID:</Typography>
+            <Typography>ID de commande:</Typography>
             <Typography>{order.id}</Typography>
           </SummaryBox>
           <SummaryBox>
@@ -222,53 +254,86 @@ const OrderDetails: React.FC = () => {
           </SummaryBox>
           <SummaryBox>
             <Typography>Total:</Typography>
-            <Typography sx={{ color: 'red' }}>{parseFloat(order.totalPrice) + 15.00}€</Typography>
+            <Typography sx={{ color: 'red' }}>{calculateTotalPrice()}€</Typography>
           </SummaryBox>
         </Section>
         <Section>
-          <Typography variant="h6">Shipping Address</Typography>
+          <Typography variant="h5">Adresse de livraison</Typography>
           <Typography>{order.shippingAddress}</Typography>
         </Section>
         <Section>
-          <Typography variant="h6">Payment Method</Typography>
+          <Typography variant="h5">Méthode de paiement</Typography>
           <Typography>{order.paymentMethod}</Typography>
         </Section>
         <Section>
-          <Typography variant="h6">Expected Date Of Delivery</Typography>
+          <Typography variant="h5">Date prévue de livraison</Typography>
           <Typography sx={{ color: 'green' }}>{order.createdAt}</Typography>
           <TrackOrderButton variant="contained">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography>Track order</Typography>
+              <Typography>Suivre la commande</Typography>
             </Box>
           </TrackOrderButton>
         </Section>
         <Section>
-          <Typography variant="h6">Assign Delivery Man</Typography>
+          <Typography variant="h5">Assigner un livreur</Typography>
           <FormControl fullWidth>
-            <InputLabel>Delivery Man</InputLabel>
+            <InputLabel sx={{ color: textColor }}>Livreur</InputLabel>
             <Select
               value={selectedDeliveryMan}
               onChange={(e) => setSelectedDeliveryMan(e.target.value as string)}
               required
+              sx={{
+                color: textColor,
+                backgroundColor: '#fff', // Ensure the background is white
+                '.MuiSelect-select': {
+                  backgroundColor: '#fff', // Ensure the dropdown is white
+                },
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: primaryColor, // Ensure the border color matches your theme
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: darkShade, // Change the border color on hover
+                },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    bgcolor: '#fff', // Background color for dropdown list
+                    '& .MuiMenuItem-root': {
+                      color: textColor, // Text color for each menu item
+                    },
+                    '& .Mui-selected': {
+                      backgroundColor: lightShade, // Background color for selected item
+                      color: textColor,
+                    },
+                  },
+                },
+              }}
             >
               {deliveryMen.map((man) => (
-                <MenuItem key={man.id} value={man.id}>{man.nom}</MenuItem>
+                <MenuItem key={man.id} value={man.id} sx={{ color: textColor, backgroundColor: '#fff' }}>
+                  {man.nom}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <Button variant="contained" onClick={handleAssignDeliveryMan} sx={{ marginTop: 2 }}>
-            Assign
+          <Button
+            variant="contained"
+            onClick={handleAssignDeliveryMan}
+            sx={{ marginTop: 2, backgroundColor: primaryColor, '&:hover': { backgroundColor: darkShade } }}
+          >
+            Assigner
           </Button>
         </Section>
       </Box>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Delivery Man Assigned</DialogTitle>
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Livreur assigné</DialogTitle>
         <DialogContent>
-          <Typography>The order will be delivered by the assigned delivery man.</Typography>
+          <Typography>La commande sera livrée par le livreur assigné.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">
+          <Button onClick={handleDialogClose} color="primary">
             OK
           </Button>
         </DialogActions>

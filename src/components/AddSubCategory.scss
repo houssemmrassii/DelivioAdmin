@@ -1,0 +1,38 @@
+.add-subcategory-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  
+    .form-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 20px;
+  
+      button {
+        background-color: #FF9A40; // Primary color
+        color: white;
+  
+        &:hover {
+          background-color: #CC7A33; // Darker shade for hover
+        }
+      }
+  
+      .cancel-button {
+        background-color: #4077FF; // Complementary color
+        color: white;
+  
+        &:hover {
+          background-color: #3066CC; // Darker shade of the complementary color
+        }
+      }
+    }
+  
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  }
+  

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, TextField, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './SStyle.css';
+import './AddSubCategory.scss'; // Assuming you'll create this SCSS file
 
 const AddSubCategory: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
@@ -12,7 +12,7 @@ const AddSubCategory: React.FC = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const categorySnapshot = await getDocs(collection(db, 'categories'));
+      const categorySnapshot = await getDocs(collection(db, 'category'));
       const categoryList = categorySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -27,30 +27,30 @@ const AddSubCategory: React.FC = () => {
     event.preventDefault();
     try {
       if (selectedCategory && subCategoryName) {
-        await addDoc(collection(db, 'subcategories'), {
+        await addDoc(collection(db, 'subcategory'), {
           name: subCategoryName,
           categoryId: selectedCategory
         });
         setError(null);
-        alert('Subcategory added successfully!');
+        alert('Sous-catégorie ajoutée avec succès!');
         setSelectedCategory('');
         setSubCategoryName('');
       } else {
-        setError('Please select a category and enter a subcategory name');
+        setError('Veuillez sélectionner une catégorie et entrer un nom de sous-catégorie');
       }
     } catch (error) {
-      setError('Failed to add subcategory');
+      setError('Échec de l\'ajout de la sous-catégorie');
     }
   };
 
   return (
-    <Container>
+    <Container className="add-subcategory-form">
       <Typography variant="h4" gutterBottom>
-        Add SubCategory
+        Ajouter une Sous-Catégorie
       </Typography>
       <form onSubmit={handleSubmit}>
         <FormControl fullWidth margin="normal">
-          <InputLabel>Select Category</InputLabel>
+          <InputLabel>Choisir une Catégorie</InputLabel>
           <Select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value as string)}
@@ -64,16 +64,21 @@ const AddSubCategory: React.FC = () => {
           </Select>
         </FormControl>
         <TextField
-          label="SubCategory Name"
+          label="Nom de la Sous-Catégorie"
           value={subCategoryName}
           onChange={(e) => setSubCategoryName(e.target.value)}
           required
           fullWidth
           margin="normal"
         />
-        <Button type="submit" variant="contained" color="primary">
-          Add SubCategory
-        </Button>
+        <div className="form-actions">
+          <Button type="submit" variant="contained" color="primary">
+            Ajouter la Sous-Catégorie
+          </Button>
+          <Button variant="contained" color="secondary">
+            Annuler
+          </Button>
+        </div>
         {error && <Typography color="error">{error}</Typography>}
       </form>
     </Container>

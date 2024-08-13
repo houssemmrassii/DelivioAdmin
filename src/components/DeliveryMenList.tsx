@@ -32,7 +32,7 @@ const DeliveryMenList: React.FC = () => {
         })) as DeliveryMan[];
         setDeliveryMen(deliveryMenList);
       } catch (error) {
-        setError('Failed to fetch delivery men');
+        setError('Échec de la récupération des livreurs');
       } finally {
         setLoading(false);
       }
@@ -46,13 +46,13 @@ const DeliveryMenList: React.FC = () => {
       await deleteDoc(doc(db, 'deliveryMen', id));
       setDeliveryMen(deliveryMen.filter(man => man.id !== id));
     } catch (error) {
-      console.error('Error deleting delivery man:', error);
-      alert('Failed to delete delivery man');
+      console.error('Erreur lors de la suppression du livreur:', error);
+      alert('Échec de la suppression du livreur');
     }
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>Chargement...</Typography>;
   }
 
   if (error) {
@@ -61,13 +61,12 @@ const DeliveryMenList: React.FC = () => {
 
   return (
     <Container>
-      
       <div className="search-export-container">
         <form className="form-search" onSubmit={(e) => e.preventDefault()}>
           <fieldset className="name">
             <input
               type="text"
-              placeholder="Search here..."
+              placeholder="Rechercher ici..."
               className="search-input"
               name="name"
             />
@@ -79,16 +78,16 @@ const DeliveryMenList: React.FC = () => {
           </div>
         </form>
         <Button variant="contained" className="export-button">
-          <i className="icon-file-text"></i>Export all delivery men
+          <i className="icon-file-text"></i>Exporter tous les livreurs
         </Button>
       </div>
       <div className="table-container">
         <ul className="table-title">
           <li>Photo</li>
           <li>ID</li>
-          <li>Name</li>
+          <li>Nom</li>
           <li>Email</li>
-          <li>Phone Number</li>
+          <li>Numéro de Téléphone</li>
           <li>Action</li>
         </ul>
         {deliveryMen.map((deliveryMan, index) => (
