@@ -1,110 +1,146 @@
-.table-container {
-    margin-top: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
+.category-list-container {
+    max-width: 1000px;
+    margin: 50px auto;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: "Inter", sans-serif;
   
-    .table-title {
+    h3 {
+      color: #333;
+      text-align: left;
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+  
+    .search-export-container {
       display: flex;
       justify-content: space-between;
-      padding: 12px 0;
-      font-weight: bold;
-      border-bottom: 1px solid #ddd;
-      border-bottom: none;
+      margin-bottom: 20px;
   
-      li {
-        flex: 1;
-        text-align: left;
-        &:first-child {
-          text-align: center;
-          flex: 1;
+      .form-search {
+        display: flex;
+        align-items: center;
+  
+        .name {
+          margin-right: 10px;
+        }
+  
+        .search-input {
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 14px;
+          width: 200px;
+        }
+  
+        .button-submit {
+          .search-button {
+            background-color: #ffffff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+  
+            &:hover {
+              background-color: #ffb065;
+            }
+  
+            .icon-search {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+  
+      .add-category-button {
+        background-color: white;
+        color: #FF9A40;
+        border: 1px solid #FF9A40;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 16px;
+        transition: background-color 0.3s;
+  
+        &:hover {
+          background-color: #FF9A40;
+          color: white;
         }
       }
     }
   
-    .category-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 0;
-      transition: background-color 0.3s ease;
-      &:last-child {
-        border-bottom: none;
+    .category-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border: none;
+  
+      th, td {
+        padding: 14px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
       }
   
-      &:hover {
-        background-color: #f1f1f1;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
+      th {
+        font-size: 13px;
+        background-color: #f4f6f8;
       }
   
       .category-image {
-        width: 50px;
-        height: 50px;
+        width: 80px;  /* Set a fixed width */
+        height: 80px;  /* Set a fixed height */
+        object-fit: cover; /* Ensure image covers the area without distortion */
         border-radius: 8px;
-        margin-right: 20px;
-      }
-  
-      li {
-        flex: 1;
-        text-align: left;
-        border-bottom: none;
-        &:first-child {
-          text-align: center;
-          flex: 1;
-        }
-  
-        &:nth-child(2) {
-          font-weight: bold;
-        }
       }
   
       .action-button {
-        color: #007bff;
+        margin-right: 6px;
+        color: #8f8f8f;
+        cursor: pointer;
+  
         &:hover {
-          color: #0056b3;
+          color: #FF9A40;
         }
       }
   
-      .delete-button {
-        color: #dc3545;
-        &:hover {
-          color: #c82333;
-        }
+      .delete-button:hover {
+        color: red;
+      }
+  
+      .edit-button:hover {
+        color: green;
       }
     }
   
+    // Adding orange border and hover effect to the Select component
     .MuiFormControl-root {
-      margin: 0;
-      width: 100%;
-    }
+      .MuiOutlinedInput-root {
+        fieldset {
+          border-color: #FF9A40 !important;
+        }
   
-    .MuiSelect-select {
-      padding: 8px 16px;
-      background-color: #fff;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-      &:focus {
-        border-color: #007bff;
-      }
-    }
-  }
+        &:hover fieldset {
+          border-color: #FF9A40 !important;
+        }
   
-  .pagination-container {
-    display: flex;
-    justify-content: center;
-    padding: 20px 0;
-    .pagination-button {
-      margin: 0 5px;
-      color: #007bff;
-      &.active {
-        background-color: #007bff;
-        color: #fff;
-        border-radius: 50%;
+        &.Mui-focused fieldset {
+          border-color: #FF9A40 !important;
+        }
       }
-      &:hover {
-        background-color: #0056b3;
-        color: #fff;
+  
+      .MuiSelect-icon {
+        color: #FF9A40;
+      }
+  
+      .MuiMenuItem-root {
+        &:hover {
+          background-color: #FF9A40;
+          color: white;
+        }
       }
     }
   }

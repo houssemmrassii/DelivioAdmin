@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, TextField, Button } from '@mui/material';
+import { Container, Typography, TextField, Button, FormControl, InputLabel } from '@mui/material';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './AddCategory.scss'; // Assuming you have a corresponding SCSS file for styling
+import './AddCategory.scss';
 
 const AddCategory: React.FC = () => {
   const [name, setName] = useState<string>('');
@@ -105,19 +105,37 @@ const AddCategory: React.FC = () => {
   };
 
   return (
-    <Container className="add-category-form">
+    <Container className="category-form">
       <ToastContainer />
       <Typography variant="h4" gutterBottom>
         {id ? 'Modifier la Catégorie' : 'Ajouter une Catégorie'}
       </Typography>
       <form onSubmit={handleSubmit}>
-        <TextField
-          label="Nom de la Catégorie"
-          fullWidth
-          margin="normal"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel shrink>Nom de la Catégorie</InputLabel>
+          <TextField
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            error={!!error && !name.trim()}
+            helperText={!!error && !name.trim() && 'Le nom de la catégorie est obligatoire.'}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: '#FF9A40',
+                },
+              },
+              '& .MuiOutlinedInput-input': {
+                backgroundColor: 'rgba(255, 154, 64, 0.05)',
+              },
+              '& .MuiInputLabel-root': {
+                paddingBottom: '5px',
+              },
+            }}
+          />
+        </FormControl>
         <div className="upload-photo">
           <input
             accept="image/*"
@@ -141,11 +159,8 @@ const AddCategory: React.FC = () => {
         </div>
         {error && <p className="error">{error}</p>}
         <div className="form-actions">
-          <Button type="submit" variant="contained" color="primary">
+          <Button type="submit" variant="contained" color="primary" className="submit-button">
             {id ? 'Mettre à jour la Catégorie' : 'Ajouter la Catégorie'}
-          </Button>
-          <Button variant="contained" color="secondary" onClick={() => navigate('/categories')}>
-            Annuler
           </Button>
         </div>
       </form>

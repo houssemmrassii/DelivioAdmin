@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, TextField, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './AddSubCategory.scss'; // Assuming you'll create this SCSS file
+import './AddSubCategory.scss';
 
 const AddSubCategory: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
@@ -50,11 +50,23 @@ const AddSubCategory: React.FC = () => {
       </Typography>
       <form onSubmit={handleSubmit}>
         <FormControl fullWidth margin="normal">
-          <InputLabel>Choisir une Catégorie</InputLabel>
+          <InputLabel shrink>Choisir une Catégorie</InputLabel>
           <Select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value as string)}
             required
+            sx={{
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#FF9A40',
+              },
+              '& .MuiOutlinedInput-input': {
+                backgroundColor: 'rgba(255, 154, 64, 0.05)',
+              },
+              '& .MuiInputLabel-root': {
+                paddingBottom: '5px',
+                backgroundColor: 'white',
+              },
+            }}
           >
             {categories.map(category => (
               <MenuItem key={category.id} value={category.id}>
@@ -63,23 +75,38 @@ const AddSubCategory: React.FC = () => {
             ))}
           </Select>
         </FormControl>
-        <TextField
-          label="Nom de la Sous-Catégorie"
-          value={subCategoryName}
-          onChange={(e) => setSubCategoryName(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel shrink>Nom de la Sous-Catégorie</InputLabel>
+          <TextField
+            variant="outlined"
+            value={subCategoryName}
+            onChange={(e) => setSubCategoryName(e.target.value)}
+            required
+            fullWidth
+            margin="normal"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: '#FF9A40',
+                },
+              },
+              '& .MuiOutlinedInput-input': {
+                backgroundColor: 'rgba(255, 154, 64, 0.05)',
+                textAlign: 'center',
+              },
+              '& .MuiInputLabel-root': {
+                paddingBottom: '5px',
+                backgroundColor: 'white',
+              },
+            }}
+          />
+        </FormControl>
         <div className="form-actions">
           <Button type="submit" variant="contained" color="primary">
             Ajouter la Sous-Catégorie
           </Button>
-          <Button variant="contained" color="secondary">
-            Annuler
-          </Button>
         </div>
-        {error && <Typography color="error">{error}</Typography>}
+        {error && <Typography color="error" className="error">{error}</Typography>}
       </form>
     </Container>
   );

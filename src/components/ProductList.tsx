@@ -101,24 +101,24 @@ const ProductList: React.FC = () => {
         <div className="add-buttons">
           <Button
             variant="contained"
-            className="add-button"
+            className="add-productlist-button"
             onClick={() => navigate('/categories/new')}
           >
-            + Ajouter Catégorie
+             Ajouter Catégorie
           </Button>
           <Button
             variant="contained"
-            className="add-button"
+            className="add-productlist-button"
             onClick={() => navigate('/subcategories/new')}
           >
-            + Ajouter Sous-Catégorie
+             Ajouter Sous-Catégorie
           </Button>
           <Button
             variant="contained"
-            className="add-button"
+            className="add-productlist-button"
             onClick={() => navigate('/products/new')}
           >
-            + Ajouter Produit
+             Ajouter Produit
           </Button>
         </div>
       </div>
@@ -149,13 +149,7 @@ const ProductList: React.FC = () => {
           </ul>
         ))}
       </div>
-      <div className="pagination-container">
-        <IconButton className="pagination-button">&lt;</IconButton>
-        <IconButton className="pagination-button active">1</IconButton>
-        <IconButton className="pagination-button">2</IconButton>
-        <IconButton className="pagination-button">3</IconButton>
-        <IconButton className="pagination-button">&gt;</IconButton>
-      </div>
+    
     </Container>
   );
 };

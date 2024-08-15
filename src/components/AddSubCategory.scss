@@ -1,31 +1,112 @@
 .add-subcategory-form {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 50px auto;
+    padding-top: 50px;
+    font-family: "Inter", sans-serif;
   
-    .form-actions {
-      display: flex;
-      justify-content: flex-start;
-      gap: 20px;
+    h4 {
+      color: #333;
+      text-align: left;
+      font-size: 36px;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
   
-      button {
-        background-color: #FF9A40; // Primary color
-        color: white;
+    .MuiFormControl-root {
+      margin-bottom: 20px;
+      padding: 0;
+      border: none;
   
-        &:hover {
-          background-color: #CC7A33; // Darker shade for hover
+      .MuiInputBase-root {
+        input, .MuiSelect-root {
+          font-size: 16px;
+          color: #333;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 10px;
+          transition: border-color 0.3s ease, background-color 0.3s ease;
+  
+          &:focus {
+            border-color: #FF9A40;
+            background-color: rgba(255, 154, 64, 0.1);
+          }
+        }
+  
+        &::before,
+        &::after {
+          display: none;
         }
       }
   
-      .cancel-button {
-        background-color: #4077FF; // Complementary color
-        color: white;
+      .MuiInputLabel-root {
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        transform: translate(14px, -6px) scale(1);
+        background-color: white;
+        padding: 0 5px;
+      }
+    }
+  
+    .MuiFormControl-root .MuiInputLabel-root,
+    .MuiTextField-root .MuiInputLabel-root {
+      margin-bottom: 5px;
+    }
+  
+    .upload-photo {
+      margin-top: 20px;
+      margin-bottom: 20px;
+  
+      .drop-area {
+        border: 2px dashed #FF9A40;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
   
         &:hover {
-          background-color: #3066CC; // Darker shade of the complementary color
+          background-color: #f9f9f9;
+        }
+  
+        .drop-text {
+          color: #FF9A40;
+          font-size: 16px;
+  
+          .click-browse {
+            font-weight: 600;
+            cursor: pointer;
+          }
+        }
+      }
+  
+      .photo-preview {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+    }
+  
+    .form-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+  
+      Button {
+        background-color: white;
+        color: #FF9A40;
+        border: 1px solid #FF9A40;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+  
+        &:hover {
+          background-color: #FF9A40;
+          color: white;
         }
       }
     }
@@ -33,6 +114,7 @@
     .error {
       color: red;
       margin-top: 10px;
+      text-align: center;
     }
   }
   

@@ -4,7 +4,6 @@ import { Container, Typography, Button, IconButton, MenuItem, Select, FormContro
 import { Edit, Delete } from '@mui/icons-material';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './SStyle.css';
 import './CategoryList.scss';
 
 interface SubCategory {
@@ -27,7 +26,6 @@ const CategoryList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
 
-  // Fetch categories from Firestore
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -38,7 +36,7 @@ const CategoryList: React.FC = () => {
           ...doc.data(),
         })) as Category[];
         setCategories(categoryList);
-        setFilteredCategories(categoryList); // Initialize filtered categories
+        setFilteredCategories(categoryList);
       } catch (error) {
         setError('Échec de la récupération des catégories');
       } finally {
@@ -49,7 +47,6 @@ const CategoryList: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Search logic
   useEffect(() => {
     setFilteredCategories(
       categories.filter(category =>
@@ -58,7 +55,6 @@ const CategoryList: React.FC = () => {
     );
   }, [searchTerm, categories]);
 
-  // Delete category logic
   const handleDelete = async (id: string) => {
     try {
       const docRef = doc(db, 'category', id);
@@ -69,7 +65,6 @@ const CategoryList: React.FC = () => {
     }
   };
 
-  // Update category logic (navigate to edit page)
   const handleEdit = (id: string) => {
     navigate(`/categories/edit/${id}`);
   };
@@ -83,10 +78,10 @@ const CategoryList: React.FC = () => {
   }
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>
-        Liste des Catégories
-      </Typography>
+    <Container className="category-list-container">
+      <div>
+        <h3>Liste des Catégories</h3>
+      </div>
       <div className="search-export-container">
         <form className="form-search" onSubmit={(e) => e.preventDefault()}>
           <fieldset className="name">
@@ -105,54 +100,49 @@ const CategoryList: React.FC = () => {
             </button>
           </div>
         </form>
-        <Button variant="contained" className="export-button">
-          <i className="icon-file-text"></i>Exporter toutes les catégories
+        <Button variant="contained" className="add-category-button" onClick={() => navigate('/categories/new')}>
+           Ajouter Catégorie
         </Button>
       </div>
-      <div className="table-container">
-        <ul className="table-title">
-          <li>Image de la Catégorie</li>
-          <li>Nom</li>
-          <li>Sous-catégories</li>
-          <li>Action</li>
-        </ul>
-        {filteredCategories.map((category, index) => (
-          <ul key={category.id} className={`category-item ${index % 2 === 0 ? 'even-row' : 'odd-row'}`}>
-            <li>
-              <img src={category.categoryImage} alt={category.name} className="category-image" />
-            </li>
-            <li>{category.name}</li>
-            <li>
-              <FormControl fullWidth>
-                <Select
-                  value=""
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>Sélectionnez une sous-catégorie</MenuItem>
-                  {category.subCategories.map(sub => (
-                    <MenuItem key={sub.id} value={sub.id}>{sub.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </li>
-            <li>
-              <IconButton className="action-button" onClick={() => handleEdit(category.id)}>
-                <Edit />
-              </IconButton>
-              <IconButton className="action-button delete-button" onClick={() => handleDelete(category.id)}>
-                <Delete />
-              </IconButton>
-            </li>
-          </ul>
-        ))}
-      </div>
-      <div className="pagination-container">
-        <IconButton className="pagination-button">&lt;</IconButton>
-        <IconButton className="pagination-button active">1</IconButton>
-        <IconButton className="pagination-button">2</IconButton>
-        <IconButton className="pagination-button">3</IconButton>
-        <IconButton className="pagination-button">&gt;</IconButton>
-      </div>
+      <table className="category-table">
+        <thead>
+          <tr>
+            <th>Image de la Catégorie</th>
+            <th>Nom</th>
+            <th>Sous-catégories</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCategories.map((category) => (
+            <tr key={category.id}>
+              <td><img src={category.categoryImage} alt={category.name} className="category-image" /></td>
+              <td>{category.name}</td>
+              <td>
+                <FormControl fullWidth>
+                  <Select
+                    value=""
+                    displayEmpty
+                  >
+                    <MenuItem value="" disabled>List sous-catégorie</MenuItem>
+                    {category.subCategories.map(sub => (
+                      <MenuItem key={sub.id} value={sub.id}>{sub.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </td>
+              <td>
+                <IconButton className="action-button" onClick={() => handleEdit(category.id)}>
+                  <Edit />
+                </IconButton>
+                <IconButton className="action-button delete-button" onClick={() => handleDelete(category.id)}>
+                  <Delete />
+                </IconButton>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </Container>
   );
 };

@@ -1,66 +1,78 @@
 .product-list-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 50px auto;
+    font-family: "Inter", sans-serif;
+  
+    h4 {
+      color: #333;
+      text-align: left;
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
   
     .search-export-container {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
   
       .form-search {
         display: flex;
   
-        .search-input {
-          padding: 10px;
-          border-radius: 8px;
-          border: 1px solid #ddd;
-          width: 250px;
-          font-size: 14px;
-          outline: none;
-        }
+        .name {
+          position: relative;
   
-        .search-button {
-          background: #f0f0ef;
-          border: none;
-          color: white;
-          padding: 10px;
-          margin-left: 10px;
-          border-radius: 8px;
-          cursor: pointer;
-  
-          &:hover {
-            background: #CC7A33;
+          .search-input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 250px;
           }
         }
-      }
   
-      .export-button {
-        background-color: #4077FF;
-        color: white;
-        border-radius: 8px;
-        padding: 10px 20px;
+        .button-submit {
+          margin-left: 10px;
   
-        &:hover {
-          background-color: #3066CC;
+          .search-button {
+            background-color: #ffffff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+  
+            &:hover {
+              background-color: #FFB668;
+            }
+          }
         }
       }
   
       .add-buttons {
         display: flex;
-        gap: 10px;
+        gap: 15px; // Adjust the spacing between buttons as needed
   
-        .add-button {
-          background-color: #FF9A40;
-          color: white;
+        .add-productlist-button {
+          background-color: white;
+          color: #FF9A40;
+          border: 1px solid #FF9A40;
           border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
           padding: 10px 20px;
+          transition: background-color 0.3s ease;
+          box-shadow: none; // No shadow
   
           &:hover {
-            background-color: #CC7A33;
+            background-color: #FF9A40; // Orange color on hover
+            color: white; // Text color on hover
+          }
+  
+          &:focus {
+            outline: none;
           }
         }
       }
@@ -74,7 +86,6 @@
         justify-content: space-between;
         background-color: #f4f4f4;
         padding: 10px;
-        border-radius: 8px;
         font-weight: bold;
       }
   
@@ -89,30 +100,24 @@
         }
   
         &.odd-row {
-          background-color: #fff;
+          background-color: #ffffff;
         }
   
         .product-image {
-          width: 100px;
-          height:100px;
-          object-fit: cover;
+          max-width: 80px;
           border-radius: 8px;
         }
   
         .action-button {
-          color: #4077FF;
+          color: #8f8f8f;
   
           &:hover {
-            color: #3066CC;
+            color: #FF9A40; // Orange color on hover
           }
         }
   
-        .delete-button {
-          color: red;
-  
-          &:hover {
-            color: darkred;
-          }
+        .delete-button:hover {
+          color: red; // Red color on hover for delete action
         }
       }
     }
@@ -123,14 +128,12 @@
       margin-top: 20px;
   
       .pagination-button {
-        background-color: #FF9A40;
-        color: white;
+        color: #FF9A40;
         margin: 0 5px;
-        padding: 5px 10px;
-        border-radius: 8px;
   
         &.active {
-          background-color: #CC7A33;
+          font-weight: bold;
+          border-bottom: 2px solid #FF9A40;
         }
       }
     }

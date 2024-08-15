@@ -1,251 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Container, TextField, Button, Select, FormControl, InputLabel, MenuItem, Typography } from '@mui/material';
-import { collection, addDoc, updateDoc, doc, getDoc, getDocs } from 'firebase/firestore';
-import { db, storage } from '../firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './ProductForm.scss';
-
-interface Category {
-  id: string;
-  name: string;
-}
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Typography, Button, IconButton, MenuItem, Select, FormControl } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import './PromoCodeManager.css'; // Use the same CSS file for consistency
 
 interface SubCategory {
   id: string;
   name: string;
-  categoryId: string;
 }
 
-const ProductForm: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>();
-  const [productName, setProductName] = useState<string>('');
-  const [productDescription, setProductDescription] = useState<string>('');
-  const [productPrice, setProductPrice] = useState<number | null>(null);
-  const [category, setCategory] = useState<string>('');
-  const [subCategory, setSubCategory] = useState<string>('');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoURL, setPhotoURL] = useState<string | null>(null);
+interface Category {
+  id: string;
+  name: string;
+  categoryImage: string;
+  subCategories: SubCategory[];
+}
+
+const CategoryList: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCategoriesAndProduct = async () => {
-      const categorySnapshot = await getDocs(collection(db, 'categories'));
-      const categoryList: Category[] = categorySnapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.data().name,
-      }));
-      setCategories(categoryList);
-
-      const subCategorySnapshot = await getDocs(collection(db, 'subcategories'));
-      const subCategoryList: SubCategory[] = subCategorySnapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.data().name,
-        categoryId: doc.data().categoryId,
-      }));
-      setSubCategories(subCategoryList);
-
-      if (productId) {
-        const productDoc = await getDoc(doc(db, 'products', productId));
-        if (productDoc.exists()) {
-          const productData = productDoc.data();
-          setProductName(productData.productName);
-          setProductDescription(productData.productDescription);
-          setProductPrice(productData.productPrice);
-          setCategory(productData.productCategory);
-          setSubCategory(productData.productSpecCategory);
-          setPhotoURL(productData.productImage);
-        }
+    const fetchCategories = async () => {
+      try {
+        const categoryCollection = collection(db, 'category');
+        const categorySnapshot = await getDocs(categoryCollection);
+        const categoryList: Category[] = categorySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Category[];
+        setCategories(categoryList);
+        setFilteredCategories(categoryList);
+      } catch (error) {
+        setError('Échec de la récupération des catégories');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCategoriesAndProduct();
-  }, [productId]);
+    fetchCategories();
+  }, []);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhoto(file);
-      setPhotoURL(URL.createObjectURL(file));
-    }
-  };
+  useEffect(() => {
+    setFilteredCategories(
+      categories.filter(category =>
+        searchTerm === '' || category.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [searchTerm, categories]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!productName.trim()) {
-      setError('Le nom du produit est obligatoire.');
-      return;
-    }
-
-    if (!productDescription.trim()) {
-      setError('La description du produit est obligatoire.');
-      return;
-    }
-
-    if (!productPrice || productPrice <= 0) {
-      setError('Le prix du produit doit être supérieur à 0.');
-      return;
-    }
-
-    if (!category) {
-      setError('La catégorie est obligatoire.');
-      return;
-    }
-
-    if (!subCategory) {
-      setError('La sous-catégorie est obligatoire.');
-      return;
-    }
-
-    if (!photo && !photoURL) {
-      setError('L\'image du produit est obligatoire.');
-      return;
-    }
-
+  const handleDelete = async (id: string) => {
     try {
-      let imageUrl = photoURL;
-
-      if (photo) {
-        const storageRef = ref(storage, `productImages/${photo.name}`);
-        await uploadBytes(storageRef, photo);
-        imageUrl = await getDownloadURL(storageRef);
-      }
-
-      const productData = {
-        productName,
-        productDescription,
-        productPrice,
-        productCategory: category,
-        productSpecCategory: subCategory,
-        productImage: imageUrl,
-      };
-
-      if (productId) {
-        await updateDoc(doc(db, 'products', productId), productData);
-      } else {
-        await addDoc(collection(db, 'products'), productData);
-      }
-
-      toast.success('Produit enregistré avec succès!', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-
-      setTimeout(() => navigate('/products'), 5000);
-    } catch (err) {
-      console.error('Error adding document: ', err);
-      setError('Échec de l\'enregistrement du produit');
+      const docRef = doc(db, 'category', id);
+      await deleteDoc(docRef);
+      setCategories(categories.filter(category => category.id !== id));
+    } catch (error) {
+      setError('Échec de la suppression de la catégorie');
     }
   };
+
+  const handleEdit = (id: string) => {
+    navigate(`/categories/edit/${id}`);
+  };
+
+  if (loading) {
+    return <Typography>Chargement...</Typography>;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
 
   return (
-    <Container className="product-form-container">
-      <ToastContainer />
-      <Typography variant="h4" gutterBottom>
-        {productId ? 'Modifier le Produit' : 'Ajouter le Produit'}
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Nom du Produit"
-          fullWidth
-          margin="normal"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-          error={!!error && !productName.trim()}
-          helperText={!!error && !productName.trim() && 'Le nom du produit est obligatoire.'}
-        />
-        <TextField
-          label="Description du Produit"
-          fullWidth
-          margin="normal"
-          value={productDescription}
-          onChange={(e) => setProductDescription(e.target.value)}
-          error={!!error && !productDescription.trim()}
-          helperText={!!error && !productDescription.trim() && 'La description du produit est obligatoire.'}
-        />
-        <TextField
-          label="Prix du Produit"
-          type="number"
-          fullWidth
-          margin="normal"
-          value={productPrice ?? ''}
-          onChange={(e) => setProductPrice(parseFloat(e.target.value))}
-          error={!!error && (!productPrice || productPrice <= 0)}
-          helperText={!!error && (!productPrice || productPrice <= 0) && 'Le prix du produit doit être supérieur à 0.'}
-        />
-        <FormControl fullWidth margin="normal" error={!!error && !category}>
-          <InputLabel>Catégorie</InputLabel>
-          <Select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as string)}
-          >
-            {categories.map(category => (
-              <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
-            ))}
-          </Select>
-          {!!error && !category && <Typography color="error">La catégorie est obligatoire.</Typography>}
-        </FormControl>
-        <FormControl fullWidth margin="normal" error={!!error && !subCategory}>
-          <InputLabel>Sous-Catégorie</InputLabel>
-          <Select
-            value={subCategory}
-            onChange={(e) => setSubCategory(e.target.value as string)}
-          >
-            {subCategories
-              .filter(subCat => subCat.categoryId === category)
-              .map(subCat => (
-                <MenuItem key={subCat.id} value={subCat.id}>{subCat.name}</MenuItem>
-              ))
-            }
-          </Select>
-          {!!error && !subCategory && <Typography color="error">La sous-catégorie est obligatoire.</Typography>}
-        </FormControl>
-        <div className="upload-photo">
-          <input
-            accept="image/*"
-            type="file"
-            id="photo-upload"
-            style={{ display: 'none' }}
-            onChange={handlePhotoChange}
-          />
-          <label htmlFor="photo-upload">
-            <div className="drop-area">
-              {photoURL ? (
-                <img src={photoURL} alt="Aperçu de l'image" className="photo-preview" />
-              ) : (
-                <div className="drop-text">
-                  <span>Déposez vos images ici ou sélectionnez </span>
-                  <span className="click-browse">cliquez pour parcourir</span>
-                </div>
-              )}
-            </div>
-          </label>
-          {!!error && !photoURL && !photo && <Typography color="error">L'image du produit est obligatoire.</Typography>}
-        </div>
-        {error && <p className="error">{error}</p>}
-        <div className="form-actions">
-          <Button type="submit" variant="contained" color="primary">
-            {productId ? 'Modifier le Produit' : 'Ajouter le Produit'}
-          </Button>
-          <Button variant="contained" color="secondary" onClick={() => navigate('/products')}>
-            Annuler
-          </Button>
-        </div>
-      </form>
+    <Container className="promo-code-manager">
+      <div>
+        <h3>Liste des Catégories</h3>
+       
+      </div>
+      <div className="search-export-container">
+        <form className="form-search" onSubmit={(e) => e.preventDefault()}>
+          <fieldset className="name">
+            <input
+              type="text"
+              placeholder="Recherchez ici..."
+              className="search-input"
+              name="name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </fieldset>
+          <div className="button-submit">
+            <button type="submit" className="search-button">
+              <i className="icon-search"></i>
+            </button>
+          </div>
+        </form>
+        <Button variant="contained" className="ajouter" onClick={() => navigate('/categories/new')}>
+          + Ajouter
+        </Button>
+      </div>
+      <table className="promo-table">
+        <thead>
+          <tr>
+            <th>Image de la Catégorie</th>
+            <th>Nom</th>
+            <th>Sous-catégories</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCategories.map((category) => (
+            <tr key={category.id}>
+              <td><img src={category.categoryImage} alt={category.name} className="category-image" /></td>
+              <td>{category.name}</td>
+              <td>
+                <FormControl fullWidth>
+                  <Select
+                    value=""
+                    displayEmpty
+                  >
+                    <MenuItem value="" disabled>Sélectionnez une sous-catégorie</MenuItem>
+                    {category.subCategories.map(sub => (
+                      <MenuItem key={sub.id} value={sub.id}>{sub.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </td>
+              <td>
+                <IconButton className="action-button" onClick={() => handleEdit(category.id)}>
+                  <Edit />
+                </IconButton>
+               
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </Container>
   );
 };
 
-export default ProductForm;
+export default CategoryList;

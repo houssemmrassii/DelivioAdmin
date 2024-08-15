@@ -4,7 +4,7 @@ import { Container, Typography, Button, IconButton } from '@mui/material';
 import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './SStyle.css'; // Import the CSS file
+import './PromoCodeManager.css'; // Import the CSS file
 
 interface OrderItem {
   productName: string;
